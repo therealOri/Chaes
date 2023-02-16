@@ -20,6 +20,7 @@ __ __
 
 Added:
 * Initial release
+* Encryption ends as hex instead of just a base64 string. (I think it's cooler, idk if it's better)
 __ __
 
 <br />
