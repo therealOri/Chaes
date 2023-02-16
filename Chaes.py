@@ -5,6 +5,7 @@ from Crypto.Random import get_random_bytes
 import gcm
 import beaupy
 from pystyle import Colors, Colorate
+import binascii
 
 
 def banner():
@@ -41,7 +42,8 @@ def encrypt(plaintext, eKey):
     result = json.dumps(dict(zip(jk, jv)))
     result_bytes = bytes(result, 'utf-8')
     b64_result = base64.b64encode(result_bytes)
-    return b64_result.decode()
+    final_result = base64_to_hex(b64_result)
+    return final_result
 
 
 
@@ -62,6 +64,17 @@ def decrypt(dKey, json_input, salt):
     return decrypted_message
 
 
+# Convert base64 string to hex
+def base64_to_hex(base64_string):
+    decoded_bytes = base64.b64decode(base64_string)
+    hex_string = binascii.hexlify(decoded_bytes)
+    return hex_string.decode()
+
+# Convert hex string to base64
+def hex_to_base64(hex_string):
+    hex_bytes = bytes.fromhex(hex_string)
+    base64_string = base64.b64encode(hex_bytes)
+    return base64_string.decode()
 
 
 
@@ -106,9 +119,10 @@ if __name__ == '__main__':
             #Get key and message
             dKey = beaupy.prompt("Encryption Key")
             dMessage = beaupy.prompt("Encrypted Message")
+            enc_message = hex_to_base64(dMessage)
 
             #Decode message and get salt and key after splitting on ":" to make a list.
-            json_input = base64.b64decode(dMessage)
+            json_input = base64.b64decode(enc_message)
             key_and_salt = dKey.split(":")
             salt = key_and_salt[1]
             key = key_and_salt[0]
