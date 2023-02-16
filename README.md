@@ -1,2 +1,58 @@
 # Chaes
-An Simple AES256-GCM+ChaCha20_Poly1305 encryptor and decryptor.
+A Simple AES256-GCM+ChaCha20_Poly1305 encryptor and decryptor.
+__ __
+
+<br />
+
+# About
+Chaes is my implementation of combining the encryption methods of AES-GCM and ChaCha20_Poly1305. I would use [Deoxys](https://sites.google.com/view/deoxyscipher) too but I can't find anything for it for python. Not even pycryptodome or cryptography has it yet, only in `Rust` and `Go` can I really find it. But rest assured, when it does become available for python, I am going to try and add it to my concoction of encryptions here.
+__ __
+
+<br />
+<br />
+
+# Changes & Updates
+> 2/16/23
+
+<br />
+
+Added:
+* Initial release
+__ __
+
+<br />
+<br />
+
+# Todo
+> [] - Add/implement Deoxys
+__ __
+
+<br />
+<br />
+
+# Installation
+```bash
+git clone https://github.com/therealOri/Chaes.git
+cd Chaes
+virtualenv chaENV
+source chaENV/bin/activate
+pip install -r requirements.txt
+python Chaes.py
+```
+> If you don't have `virtualenv` you can install it via pip
+
+`pip install virtualenv`
+__ __
+
+
+<br />
+<br />
+<br />
+
+# Support  |  Buy me a coffee <3
+(God knows I need one xD)
+
+Donate to me here:
+> - Don't have Cashapp? [Sign Up](https://cash.app/app/TKWGCRT)
+
+![image](https://user-images.githubusercontent.com/45724082/158000721-33c00c3e-68bb-4ee3-a2ae-aefa549cfb33.png)
