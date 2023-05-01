@@ -4,6 +4,7 @@ from Crypto.Cipher import ChaCha20_Poly1305
 from Crypto.Random import get_random_bytes
 import gcm
 import beaupy
+from beaupy.spinners import *
 from pystyle import Colors, Colorate
 import binascii
 import os
@@ -131,10 +132,23 @@ if __name__ == '__main__':
                 if enc_options[1] in enc_option:
                     gcm.clear()
                     file_path = beaupy.prompt("File to encrypt.").replace('\\', ' ').strip()
-
                     hex_format = "0123456789abcdefABCDEF"
-                    with open(file_path, 'r') as rd:
-                        data_check = rd.read()
+                    BUFFER_SIZE = 65536  # 64KB buffer size
+
+                    try:
+                        with open(file_path, 'r') as rd:
+                            while True:
+                                chunk = rd.read(BUFFER_SIZE)
+                                if not chunk:
+                                    break
+                                data_check = chunk
+                    except:
+                        with open(file_path, encoding='latin-1') as rd:
+                            while True:
+                                chunk = rd.read(BUFFER_SIZE)
+                                if not chunk:
+                                    break
+                                data_check = chunk
 
                     if all(c in hex_format for c in data_check if c.isalnum()):
                         gcm.clear()
@@ -166,11 +180,14 @@ if __name__ == '__main__':
                         input(f'Save this key so you can decrypt later: {master_key}\n\nPress "enter" to contine...')
                         gcm.clear()
 
+
+                        spinner = Spinner(ARC, "Encrypting data... (this may take awhile)")
+                        spinner.start()
                         chaCrypt = encrypt(file_data, eKey)
-                        gcm.clear()
-                        with open(file_path, 'w') as fw:
+                        with open(file_path, 'w', buffering=4096*4096) as fw:
                             fw.write(chaCrypt)
                         os.rename(file_path, file_path.replace(file_path, f'{file_path}.locked'))
+                        spinner.stop()
                         input(f'File has been successfully encrypted!\n\nPress "enter" to continue...')
                         gcm.clear()
                         continue
@@ -216,8 +233,22 @@ if __name__ == '__main__':
                 if dcr_options[1] in  dcr_option:
                     file_path = beaupy.prompt("File to decrypt").replace('\\', ' ').strip()
                     hex_format = "0123456789abcdefABCDEF"
-                    with open(file_path, 'r') as rd:
-                        data_check = rd.read()
+                    BUFFER_SIZE = 65536  # 64KB buffer size
+
+                    try:
+                        with open(file_path, 'r') as rd:
+                            while True:
+                                chunk = rd.read(BUFFER_SIZE)
+                                if not chunk:
+                                    break
+                                data_check = chunk
+                    except:
+                        with open(file_path, encoding='latin-1') as rd:
+                            while True:
+                                chunk = rd.read(BUFFER_SIZE)
+                                if not chunk:
+                                    break
+                                data_check = chunk
 
                     if not all(c in hex_format for c in data_check if c.isalnum()):
                         gcm.clear()
@@ -239,11 +270,13 @@ if __name__ == '__main__':
                         salt = base64.b64decode(salt)
                         key = base64.b64decode(key)
 
+                        spinner = Spinner(ARC, "Decrypting data... (this may take awhile)")
+                        spinner.start()
                         cha_aes_crypt = decrypt(key, json_input, salt)
-                        gcm.clear()
-                        with open(file_path, 'wb') as fw:
+                        with open(file_path, 'wb', buffering=4096*4096) as fw:
                             fw.write(cha_aes_crypt)
                         os.rename(file_path, file_path.replace('.locked', ''))
+                        spinner.stop()
 
                         input(f'File has been successfully decrypted!\n\nPress "enter" to continue...')
                         gcm.clear()
@@ -263,3 +296,5 @@ if __name__ == '__main__':
         if main_options[2] in main_option:
             gcm.clear()
             exit("Goodbye! <3")
+
+
