@@ -20,6 +20,7 @@ __ __
 
 Added:
 * Functionality to encrypt and decrypt files.
+* Handling reading and parsing large files are a bit faster now. (encrypting & decrypting the data isn't any faster yet)
 __ __
 
 <br />
