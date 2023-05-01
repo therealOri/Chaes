@@ -6,6 +6,7 @@ import gcm
 import beaupy
 from pystyle import Colors, Colorate
 import binascii
+import os
 
 
 def banner():
@@ -82,63 +83,183 @@ def hex_to_base64(hex_string):
 if __name__ == '__main__':
     gcm.clear()
     while True:
-        options = ["Encrypt?", "Decrypt?", "Exit?"]
+        main_options = ["Encrypt?", "Decrypt?", "Exit?"]
         print(f'{banner()}\n\nWhat would you like to do?\n-----------------------------------------------------------\n')
-        option = beaupy.select(options, cursor_style="#ffa533")
+        main_option = beaupy.select(main_options, cursor_style="#ffa533")
 
-        if not option:
+        if not main_option:
             gcm.clear()
             exit("Keyboard Interuption Detected!\nGoodbye <3")
 
 
-        if options[0] in option:
+        if main_options[0] in main_option:
             gcm.clear()
-            message = beaupy.prompt("Message to encrypt").encode()
-            key_data = beaupy.prompt("Data for key gen").encode()
+            while True:
+                enc_options = ["Encrypt message?", "Encrypt file?", "Back?"]
+                print(f'{banner()}\n\nDo you want to encrypt a message or a file?\n-----------------------------------------------------------\n')
+                enc_option = beaupy.select(enc_options, cursor_style="#ffa533")
 
+                if not enc_option:
+                    gcm.clear()
+                    break
+
+                if enc_options[0] in enc_option:
+                    gcm.clear()
+                    message = beaupy.prompt("Message to encrypt").encode()
+                    key_data = beaupy.prompt("Data for key gen").encode()
+
+                    gcm.clear()
+                    eKey = gcm.keygen(key_data) #Returns bytes and will return "None" if what's provided is less than 100 characters.
+
+                    #Go back to main menu and continue
+                    if not eKey:
+                        continue
+
+                    save_me = base64.b64encode(eKey) #for saving eKey to decrypt later.
+                    bSalt = base64.b64encode(salt)
+                    master_key = f"{save_me.decode()}:{bSalt.decode()}"
+
+                    input(f'Save this key so you can decrypt later: {master_key}\n\nPress "enter" to contine...')
+                    gcm.clear()
+
+                    chaCrypt = encrypt(message, eKey)
+                    gcm.clear()
+                    input(f'Here is your encrypted message: {chaCrypt}\n\nPress "enter" to contine...')
+                    gcm.clear()
+
+
+                if enc_options[1] in enc_option:
+                    gcm.clear()
+                    file_path = beaupy.prompt("File to encrypt.").replace('\\', ' ').strip()
+
+                    hex_format = "0123456789abcdefABCDEF"
+                    with open(file_path, 'r') as rd:
+                        data_check = rd.read()
+
+                    if all(c in hex_format for c in data_check if c.isalnum()):
+                        gcm.clear()
+                        input('The file you have provided is already encrypted.\n\nPress "enter" to continue...')
+                        gcm.clear()
+                        continue
+
+
+                    if os.path.isfile(f'{file_path}.locked'):
+                        gcm.clear()
+                        input('The file you have provided already has the ".locked" extension.\n\nPress "enter" to continue...')
+                        gcm.clear()
+                        continue
+                    else:
+                        with open(file_path, 'rb') as rf:
+                            file_data = rf.read()
+
+                        key_data = beaupy.prompt("Data for key gen").encode()
+                        gcm.clear()
+                        eKey = gcm.keygen(key_data)
+
+                        if not eKey:
+                            continue
+
+                        save_me = base64.b64encode(eKey)
+                        bSalt = base64.b64encode(salt)
+                        master_key = f"{save_me.decode()}:{bSalt.decode()}"
+
+                        input(f'Save this key so you can decrypt later: {master_key}\n\nPress "enter" to contine...')
+                        gcm.clear()
+
+                        chaCrypt = encrypt(file_data, eKey)
+                        gcm.clear()
+                        with open(file_path, 'w') as fw:
+                            fw.write(chaCrypt)
+                        os.rename(file_path, file_path.replace(file_path, f'{file_path}.locked'))
+                        input(f'File has been successfully encrypted!\n\nPress "enter" to continue...')
+                        gcm.clear()
+                        continue
+
+                if enc_options[2] in enc_option:
+                    gcm.clear()
+                    break
+
+
+
+        if main_options[1] in main_option:
             gcm.clear()
-            eKey = gcm.keygen(key_data) #Returns bytes and will return "None" if what's provided is less than 100 characters.
+            while True:
+                dcr_options = ["Decrypt message?", "Decrypt file?", "Back?"]
+                print(f'{banner()}\n\nDo you want to decrypt a message or a file?\n-----------------------------------------------------------\n')
+                dcr_option = beaupy.select(dcr_options, cursor_style="#ffa533")
 
-            #Go back to main menu and continue
-            if not eKey:
-                continue
+                if not dcr_option:
+                    gcm.clear()
+                    break
 
-            save_me = base64.b64encode(eKey) #for saving eKey to decrypt later.
-            bSalt = base64.b64encode(salt)
-            master_key = f"{save_me.decode()}:{bSalt.decode()}"
+                if dcr_options[0] in dcr_option:
+                    #Get key and message
+                    dKey = beaupy.prompt("Encryption Key")
+                    dMessage = beaupy.prompt("Encrypted Message")
+                    enc_message = hex_to_base64(dMessage)
 
-            input(f'Save this key so you can decrypt later: {master_key}\n\nPress "enter" to contine...')
-            gcm.clear()
+                    #Decode message and get salt and key after splitting on ":" to make a list.
+                    json_input = base64.b64decode(enc_message)
+                    key_and_salt = dKey.split(":")
+                    salt = key_and_salt[1]
+                    key = key_and_salt[0]
+                    salt = base64.b64decode(salt)
+                    key = base64.b64decode(key)
 
-            chaCrypt = encrypt(message, eKey)
-            gcm.clear()
-            input(f'Here is your encrypted message: {chaCrypt}\n\nPress "enter" to contine...')
-            gcm.clear()
+                    #Decrypt data.
+                    cha_aes_crypt = decrypt(key, json_input, salt)
+                    gcm.clear()
+                    input(f'Here is your encrypted message: {cha_aes_crypt}\n\nPress "enter" to contine...')
+                    gcm.clear()
+                    continue
 
-        if options[1] in option:
-            #Get key and message
-            dKey = beaupy.prompt("Encryption Key")
-            dMessage = beaupy.prompt("Encrypted Message")
-            enc_message = hex_to_base64(dMessage)
+                if dcr_options[1] in  dcr_option:
+                    file_path = beaupy.prompt("File to decrypt").replace('\\', ' ').strip()
+                    hex_format = "0123456789abcdefABCDEF"
+                    with open(file_path, 'r') as rd:
+                        data_check = rd.read()
 
-            #Decode message and get salt and key after splitting on ":" to make a list.
-            json_input = base64.b64decode(enc_message)
-            key_and_salt = dKey.split(":")
-            salt = key_and_salt[1]
-            key = key_and_salt[0]
-            salt = base64.b64decode(salt)
-            key = base64.b64decode(key)
+                    if not all(c in hex_format for c in data_check if c.isalnum()):
+                        gcm.clear()
+                        input('The file you have provided does not match encrypted format - (hexadecimal).\n\nPress "enter" to continue...')
+                        gcm.clear()
+                        continue
 
-            #Decrypt data.
-            cha_aes_crypt = decrypt(key, json_input, salt)
-            gcm.clear()
-            input(f'Here is your encrypted message: {cha_aes_crypt}\n\nPress "enter" to contine...')
-            gcm.clear()
 
-        if options[2] in option:
+                    if file_path.endswith(".locked"):
+                        dKey = beaupy.prompt("Encryption Key")
+                        with open(file_path, 'r') as fr:
+                            file_data = fr.read()
+                        enc_message = hex_to_base64(file_data)
+
+                        json_input = base64.b64decode(enc_message)
+                        key_and_salt = dKey.split(":")
+                        salt = key_and_salt[1]
+                        key = key_and_salt[0]
+                        salt = base64.b64decode(salt)
+                        key = base64.b64decode(key)
+
+                        cha_aes_crypt = decrypt(key, json_input, salt)
+                        gcm.clear()
+                        with open(file_path, 'wb') as fw:
+                            fw.write(cha_aes_crypt)
+                        os.rename(file_path, file_path.replace('.locked', ''))
+
+                        input(f'File has been successfully decrypted!\n\nPress "enter" to continue...')
+                        gcm.clear()
+                        continue
+                    else:
+                        gcm.clear()
+                        input('The file you have provided does not have the ".locked" extension.\n\nPress "enter" to continue...')
+                        gcm.clear()
+                        continue
+
+                if dcr_options[2] in dcr_option:
+                    gcm.clear()
+                    break
+
+
+
+        if main_options[2] in main_option:
             gcm.clear()
             exit("Goodbye! <3")
-
-
-
-
