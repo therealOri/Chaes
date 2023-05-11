@@ -5,7 +5,7 @@ __ __
 <br />
 
 # About
-Chaes is my implementation of combining the encryption methods of AES-GCM and ChaCha20_Poly1305. I would use [Deoxys](https://sites.google.com/view/deoxyscipher) too but I can't find anything for it for python. Not even pycryptodome or cryptography has it yet, only in `Rust` and `Go` can I really find it. But rest assured, when it does become available for python, I am going to try and add it to my concoction of encryptions here.
+Chaes is my implementation of combining the encryption methods of AES-GCM and ChaCha20_Poly1305. I would use [Deoxys](https://sites.google.com/view/deoxyscipher) too but I can't find anything for it for python. Not even pycryptodome or cryptography has it yet, only in `Rust` and `Go` can I really find it. But rest assured, when it does become available for python, I am going to try and add it to my concoction of encryptions for chaeslib.
 
 Want to use this encryption for your own projects? Now you can! with [Chaeslib](https://pypi.org/project/Chaeslib/).
 __ __
