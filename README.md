@@ -16,14 +16,14 @@ __ __
 <br />
 
 # Changes & Updates
-> 5/1/23
+> 5/14/23
 
 <br />
 
 Added:
-* Functionality to encrypt and decrypt files.
-* Handling reading and parsing large files are a bit faster now. (encrypting & decrypting the data isn't any faster yet)
-> Works with images, .zip archives, and .tar.gz archives.
+
+* Squashed some bugs. If checks when checking to see if a file was encrypted or not and if the file has ".locked" or not will now work like it should.
+* Added a new feature to allow you to encrypt data using an already generated key. Instead of generating a new one each time you want to encrypt some data.
 __ __
 
 <br />
