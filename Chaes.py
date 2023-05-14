@@ -48,6 +48,27 @@ def encrypt(plaintext, eKey):
     return final_result
 
 
+# I couldn't be asked to make my life harder by editing the above function just to handle if a user has an encryption key to use already.
+# So I just copy and pasted the same function and allowd it to take an extra parameter. You are more than welcome to contribue/help.
+def encrypt_v2(plaintext, aesKey, chaKey):
+    #AES
+    data_enc = gcm.stringE(enc_data=plaintext, key=aesKey)
+    data_enc = bytes(data_enc, 'utf-8')
+
+    #ChaCha
+    cipher = ChaCha20_Poly1305.new(key=chaKey)
+    cipher.update(chacha_header)
+    ciphertext, tag = cipher.encrypt_and_digest(data_enc)
+
+    jk = [ 'nonce', 'header', 'ciphertext', 'tag' ]
+    jv = [ base64.b64encode(x).decode('utf-8') for x in (cipher.nonce, chacha_header, ciphertext, tag) ]
+    result = json.dumps(dict(zip(jk, jv)))
+    result_bytes = bytes(result, 'utf-8')
+    b64_result = base64.b64encode(result_bytes)
+    final_result = base64_to_hex(b64_result)
+    return final_result
+
+
 
 def decrypt(dKey, json_input, salt):
     try:
@@ -107,26 +128,38 @@ if __name__ == '__main__':
                 if enc_options[0] in enc_option:
                     gcm.clear()
                     message = beaupy.prompt("Message to encrypt").encode()
-                    key_data = beaupy.prompt("Data for key gen").encode()
+                    if beaupy.confirm("Do you have an encryption key to use already?"):
+                        eKey = beaupy.prompt("Encryption Key")
+                        key_and_salt = eKey.split(":")
+                        salt_1 = key_and_salt[1]
+                        key_0 = key_and_salt[0]
+                        salt = base64.b64decode(salt_1)
+                        key = base64.b64decode(key_0)
+                        chaCrypt = encrypt_v2(message, key, salt)
+                        gcm.clear()
+                        input(f'Here is your encrypted message: {chaCrypt}\n\nPress "enter" to contine...')
+                        gcm.clear()
+                    else:
+                        key_data = beaupy.prompt("Data for key gen").encode()
 
-                    gcm.clear()
-                    eKey = gcm.keygen(key_data) #Returns bytes and will return "None" if what's provided is less than 100 characters.
+                        gcm.clear()
+                        eKey = gcm.keygen(key_data) #Returns bytes and will return "None" if what's provided is less than 100 characters.
 
-                    #Go back to main menu and continue
-                    if not eKey:
-                        continue
+                        #Go back to main menu and continue
+                        if not eKey:
+                            continue
 
-                    save_me = base64.b64encode(eKey) #for saving eKey to decrypt later.
-                    bSalt = base64.b64encode(salt)
-                    master_key = f"{save_me.decode()}:{bSalt.decode()}"
+                        save_me = base64.b64encode(eKey) #for saving eKey to decrypt later.
+                        bSalt = base64.b64encode(salt)
+                        master_key = f"{save_me.decode()}:{bSalt.decode()}"
 
-                    input(f'Save this key so you can decrypt later: {master_key}\n\nPress "enter" to contine...')
-                    gcm.clear()
+                        input(f'Save this key so you can decrypt later: {master_key}\n\nPress "enter" to contine...')
+                        gcm.clear()
 
-                    chaCrypt = encrypt(message, eKey)
-                    gcm.clear()
-                    input(f'Here is your encrypted message: {chaCrypt}\n\nPress "enter" to contine...')
-                    gcm.clear()
+                        chaCrypt = encrypt(message, eKey)
+                        gcm.clear()
+                        input(f'Here is your encrypted message: {chaCrypt}\n\nPress "enter" to contine...')
+                        gcm.clear()
 
 
                 if enc_options[1] in enc_option:
@@ -157,7 +190,7 @@ if __name__ == '__main__':
                         continue
 
 
-                    if os.path.isfile(f'{file_path}.locked'):
+                    if file_path.endswith('.locked'):
                         gcm.clear()
                         input('The file you have provided already has the ".locked" extension.\n\nPress "enter" to continue...')
                         gcm.clear()
@@ -166,31 +199,55 @@ if __name__ == '__main__':
                         with open(file_path, 'rb') as rf:
                             file_data = rf.read()
 
-                        key_data = beaupy.prompt("Data for key gen").encode()
-                        gcm.clear()
-                        eKey = gcm.keygen(key_data)
 
-                        if not eKey:
+                        if beaupy.confirm("Do you have an encryption key to use already?"):
+                            eKey = beaupy.prompt("Encryption Key")
+
+                            if not eKey:
+                                continue
+
+                            key_and_salt = eKey.split(":")
+                            salt_1 = key_and_salt[1]
+                            key_0 = key_and_salt[0]
+                            salt = base64.b64decode(salt_1)
+                            key = base64.b64decode(key_0)
+
+                            spinner = Spinner(ARC, "Encrypting data... (this may take awhile)")
+                            spinner.start()
+                            chaCrypt = encrypt_v2(file_data, key, salt)
+                            with open(file_path, 'w', buffering=4096*4096) as fw:
+                                fw.write(chaCrypt)
+                            os.rename(file_path, file_path.replace(file_path, f'{file_path}.locked'))
+                            spinner.stop()
+                            input(f'File has been successfully encrypted!\n\nPress "enter" to continue...')
+                            gcm.clear()
                             continue
+                        else:
+                            key_data = beaupy.prompt("Data for key gen").encode()
+                            gcm.clear()
+                            eKey = gcm.keygen(key_data)
 
-                        save_me = base64.b64encode(eKey)
-                        bSalt = base64.b64encode(salt)
-                        master_key = f"{save_me.decode()}:{bSalt.decode()}"
+                            if not eKey:
+                                continue
 
-                        input(f'Save this key so you can decrypt later: {master_key}\n\nPress "enter" to contine...')
-                        gcm.clear()
+                            save_me = base64.b64encode(eKey)
+                            bSalt = base64.b64encode(salt)
+                            master_key = f"{save_me.decode()}:{bSalt.decode()}"
+
+                            input(f'Save this key so you can decrypt later: {master_key}\n\nPress "enter" to contine...')
+                            gcm.clear()
 
 
-                        spinner = Spinner(ARC, "Encrypting data... (this may take awhile)")
-                        spinner.start()
-                        chaCrypt = encrypt(file_data, eKey)
-                        with open(file_path, 'w', buffering=4096*4096) as fw:
-                            fw.write(chaCrypt)
-                        os.rename(file_path, file_path.replace(file_path, f'{file_path}.locked'))
-                        spinner.stop()
-                        input(f'File has been successfully encrypted!\n\nPress "enter" to continue...')
-                        gcm.clear()
-                        continue
+                            spinner = Spinner(ARC, "Encrypting data... (this may take awhile)")
+                            spinner.start()
+                            chaCrypt = encrypt(file_data, eKey)
+                            with open(file_path, 'w', buffering=4096*4096) as fw:
+                                fw.write(chaCrypt)
+                            os.rename(file_path, file_path.replace(file_path, f'{file_path}.locked'))
+                            spinner.stop()
+                            input(f'File has been successfully encrypted!\n\nPress "enter" to continue...')
+                            gcm.clear()
+                            continue
 
                 if enc_options[2] in enc_option:
                     gcm.clear()
@@ -226,7 +283,7 @@ if __name__ == '__main__':
                     #Decrypt data.
                     cha_aes_crypt = decrypt(key, json_input, salt)
                     gcm.clear()
-                    input(f'Here is your encrypted message: {cha_aes_crypt}\n\nPress "enter" to contine...')
+                    input(f'Here is your decrypted message: {cha_aes_crypt.decode()}\n\nPress "enter" to contine...')
                     gcm.clear()
                     continue
 
