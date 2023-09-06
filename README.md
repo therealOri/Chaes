@@ -2,7 +2,15 @@
 A Simple AES256-GCM+ChaCha20_Poly1305 encryptor and decryptor.
 __ __
 
-<br />
+<br>
+<br>
+
+# ⚠️ Extra Note ⚠️
+This repository/code and [Chaeslib](https://pypi.org/project/Chaeslib/) are in __NO__ way associated with "[Chaes malware](https://www.bleepingcomputer.com/news/security/chaes-malware-now-uses-google-chrome-devtools-protocol-to-steal-data/)" as reported on by [Bleeping computer](https://www.bleepingcomputer.com/). I made this repository and projects and named them this way first. If anyone is interested, I chose the name becuase of "AES" and "ChaCha" are the encryption methods I have used and meshed together. I also do find it kind of funny that th emalware uses the same name.
+> If to much confussion happens, I will have no issues changing the name of this project
+
+<br>
+<br>
 
 # About
 Chaes is my implementation of combining the encryption methods of AES-GCM and ChaCha20_Poly1305. I would use [Deoxys](https://sites.google.com/view/deoxyscipher) too but I can't find anything for it for python. Not even pycryptodome or cryptography has it yet, only in `Rust` and `Go` can I really find it. But rest assured, when it does become available for python, I am going to try and add it to my concoction of encryptions for chaeslib.
