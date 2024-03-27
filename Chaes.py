@@ -26,16 +26,15 @@ def banner():
 
 
 chacha_header = b"ChaCha real smooth~ dada da dada da"
-salt = get_random_bytes(32)
 
 
-def encrypt(plaintext, eKey):
+def encrypt(plaintext, eKey, esalt):
     #AES
     data_enc = gcm.stringE(enc_data=plaintext, key=eKey)
     data_enc = bytes(data_enc, 'utf-8')
 
     #ChaCha
-    cipher = ChaCha20_Poly1305.new(key=salt)
+    cipher = ChaCha20_Poly1305.new(key=esalt)
     cipher.update(chacha_header)
     ciphertext, tag = cipher.encrypt_and_digest(data_enc)
 
@@ -70,13 +69,13 @@ def encrypt_v2(plaintext, aesKey, chaKey):
 
 
 
-def decrypt(dKey, json_input, salt):
+def decrypt(dKey, json_input, dsalt):
     try:
         b64 = json.loads(json_input)
         jk = [ 'nonce', 'header', 'ciphertext', 'tag' ]
         jv = {k:base64.b64decode(b64[k]) for k in jk}
 
-        cipher = ChaCha20_Poly1305.new(key=salt, nonce=jv['nonce'])
+        cipher = ChaCha20_Poly1305.new(key=dsalt, nonce=jv['nonce'])
         cipher.update(jv['header'])
         plaintext = cipher.decrypt_and_verify(jv['ciphertext'], jv['tag'])
     except (ValueError, KeyError):
@@ -140,6 +139,7 @@ if __name__ == '__main__':
                         input(f'Here is your encrypted message: {chaCrypt}\n\nPress "enter" to contine...')
                         gcm.clear()
                     else:
+                        salt = get_random_bytes(32)
                         key_data = beaupy.prompt("Data for key gen").encode()
 
                         gcm.clear()
@@ -156,7 +156,7 @@ if __name__ == '__main__':
                         input(f'Save this key so you can decrypt later: {master_key}\n\nPress "enter" to contine...')
                         gcm.clear()
 
-                        chaCrypt = encrypt(message, eKey)
+                        chaCrypt = encrypt(message, eKey, salt)
                         gcm.clear()
                         input(f'Here is your encrypted message: {chaCrypt}\n\nPress "enter" to contine...')
                         gcm.clear()
@@ -223,6 +223,7 @@ if __name__ == '__main__':
                             gcm.clear()
                             continue
                         else:
+                            salt = get_random_bytes(32)
                             key_data = beaupy.prompt("Data for key gen").encode()
                             gcm.clear()
                             eKey = gcm.keygen(key_data)
@@ -240,7 +241,7 @@ if __name__ == '__main__':
 
                             spinner = Spinner(ARC, "Encrypting data... (this may take awhile)")
                             spinner.start()
-                            chaCrypt = encrypt(file_data, eKey)
+                            chaCrypt = encrypt(file_data, eKey, salt)
                             with open(file_path, 'w', buffering=4096*4096) as fw:
                                 fw.write(chaCrypt)
                             os.rename(file_path, file_path.replace(file_path, f'{file_path}.locked'))
