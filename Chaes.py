@@ -26,6 +26,7 @@ def banner():
 
 
 chacha_header = b"ChaCha real smooth~ dada da dada da"
+salt = get_random_bytes(32)
 
 
 def encrypt(plaintext, eKey):
@@ -126,7 +127,6 @@ if __name__ == '__main__':
 
                 if enc_options[0] in enc_option:
                     gcm.clear()
-                    salt = get_random_bytes(32)
                     message = beaupy.prompt("Message to encrypt").encode()
                     if beaupy.confirm("Do you have an encryption key to use already?"):
                         eKey = beaupy.prompt("Encryption Key")
@@ -143,7 +143,6 @@ if __name__ == '__main__':
                         key_data = beaupy.prompt("Data for key gen").encode()
 
                         gcm.clear()
-                        salt = get_random_bytes(32)
                         eKey = gcm.keygen(key_data) #Returns bytes and will return "None" if what's provided is less than 100 characters.
 
                         #Go back to main menu and continue
@@ -202,7 +201,6 @@ if __name__ == '__main__':
 
 
                         if beaupy.confirm("Do you have an encryption key to use already?"):
-                            salt = get_random_bytes(32)
                             eKey = beaupy.prompt("Encryption Key")
 
                             if not eKey:
@@ -225,7 +223,6 @@ if __name__ == '__main__':
                             gcm.clear()
                             continue
                         else:
-                            salt = get_random_bytes(32)
                             key_data = beaupy.prompt("Data for key gen").encode()
                             gcm.clear()
                             eKey = gcm.keygen(key_data)
